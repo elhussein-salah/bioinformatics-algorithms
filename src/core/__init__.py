@@ -30,7 +30,6 @@ from .indexing import (
 
 from .sequence_analysis import (
     compute_overlap,
-    parse_hemolytic_file,
     parse_fasta_sequences,
     OverlapEdge,
     OverlapGraph,
@@ -86,7 +85,6 @@ __all__ = [
     'build_suffix_array_with_inverse',
     # Overlap detection and graph
     'compute_overlap',
-    'parse_hemolytic_file',
     'parse_fasta_sequences',
     'OverlapEdge',
     'OverlapGraph',

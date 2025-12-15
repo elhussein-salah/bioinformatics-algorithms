@@ -102,13 +102,6 @@ class BioinformaticsApp(ModernApp):
                         'icon': '🧬',
                         'color': MODERN_THEME['success']
                     },
-                    {
-                        'id': 'hemolytic',
-                        'name': 'Hemolytic Predictor',
-                        'desc': 'Analyze hemolytic activity of peptides',
-                        'icon': '🔬',
-                        'color': MODERN_THEME['warning']
-                    }
                 ]
             },
             {
@@ -276,7 +269,6 @@ class BioinformaticsApp(ModernApp):
     def _launch_tool(self, tool_id: str):
         """Launch a specific tool in the same window."""
         tool_builders = {
-            'hemolytic': self._build_hemolytic_page,
             'fasta_processor': self._build_fasta_processor_page,
             'dna_translator': self._build_dna_translator_page,
             'exact_match': self._build_exact_match_page,
@@ -363,12 +355,12 @@ class BioinformaticsApp(ModernApp):
         
         # Team members
         team_members = [
-            ("EL-Hussein Salah", "🎯"),
+            ("EL-Hussein Salah", "🥼"),
+            ("Mohameed Ashraf", "🧬"),
+            ("Mazen Emad", "🧫"),
+            ("Karim Sayed", "📊"),
             ("Asmaa Nazih", "🔬"),
-            # ("Shams Hisham", "🧬"),
-            # ("Abdo Nawwar", "💻"),
-            # ("Yousef Hussein", "📊"),
-            # ("Ziad Mohammed", "⚡"),
+            ("Aya Khaled", "🧪"),
         ]
         
         for name, icon in team_members:
@@ -1155,62 +1147,7 @@ class BioinformaticsApp(ModernApp):
         find_btn = self.create_button(content, "Find Overlap", find_overlap, icon='🔗')
         find_btn.pack(pady=10)
     
-    def _build_hemolytic_page(self, container: tk.Frame):
-        """Build the hemolytic predictor page."""
-        from src.core.sequence_analysis import parse_hemolytic_file
-        
-        header = self.create_header(container, "🔬 Hemolytic Predictor")
-        
-        content = tk.Frame(container, bg=MODERN_THEME['bg_primary'])
-        content.pack(fill='both', expand=True, padx=30, pady=20)
-        
-        # Input section
-        input_card = self.create_card(content, "Load Dataset")
-        input_card.pack(fill='x', pady=10)
-        
-        status_label = self.create_label(input_card, "No file loaded", size='sm', 
-                                         color=MODERN_THEME['text_muted'])
-        status_label.pack(anchor='w', pady=5)
-        
-        result_text = None
-        
-        def load_file():
-            nonlocal result_text
-            file_path = self.choose_file("Select HAPPENN Dataset")
-            
-            if file_path:
-                try:
-                    df = parse_hemolytic_file(file_path)
-                    status_label.configure(text=f"Loaded: {os.path.basename(file_path)}")
-                    
-                    result_text.configure(state='normal')
-                    result_text.delete(1.0, tk.END)
-                    result_text.insert(tk.END,
-                        f"═══ Hemolytic Dataset Analysis ═══\n\n"
-                        f"Total sequences: {len(df)}\n"
-                        f"Hemolytic: {len(df[df['y'] == 1])}\n"
-                        f"Non-hemolytic: {len(df[df['y'] == 0])}\n\n"
-                        f"Sample sequences:\n"
-                    )
-                    
-                    for i, row in df.head(10).iterrows():
-                        label = "Hemolytic" if row['y'] == 1 else "Non-hemolytic"
-                        result_text.insert(tk.END, f"  [{label}] {row['Sequence'][:50]}...\n")
-                    
-                    result_text.configure(state='disabled')
-                except Exception as e:
-                    self.show_message("Error", f"Failed to parse file: {e}", 'error')
-        
-        load_btn = self.create_button(input_card, "Load HAPPENN Dataset", load_file, icon='📂')
-        load_btn.pack(anchor='w', pady=10)
-        
-        # Results
-        result_card = self.create_card(content, "Analysis Results")
-        result_card.pack(fill='both', expand=True, pady=10)
-        
-        result_text = self.create_text_area(result_card, height=15, readonly=True)
-        result_text.pack(fill='both', expand=True)
-    
+   
     def _build_fasta_converter_page(self, container: tk.Frame):
         """Build the FASTA converter page with error handling."""
         from src.core.fasta_operations import (

@@ -32,7 +32,7 @@ Bioinformatics/
 │       ├── indexing.py              # Indexing GUI
 │       ├── suffix_array.py          # Suffix array GUI
 │       ├── overlap.py               # Overlap detection GUI
-│       └── hemolytic.py             # Hemolytic predictor GUI
+│    
 │
 └── data/                      # Sample data files
     ├── dna1.fasta
@@ -72,7 +72,6 @@ python main.py
 
 | Tool | Description |
 |------|-------------|
-| **Hemolytic Predictor** | Analyze hemolytic activity of peptides from HAPPENN dataset |
 | **FASTA Processor** | Calculate GC content, complement, reverse, and reverse complement |
 | **DNA Translator** | Translate DNA sequences to protein using standard genetic code |
 | **Exact Match Finder** | Find patterns using naive string matching |

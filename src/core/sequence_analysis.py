@@ -40,40 +40,6 @@ def compute_overlap(seq_a: str, seq_b: str, min_length: int = 3) -> tuple[int, s
         start += 1
 
 
-def parse_hemolytic_file(file_path: str) -> pd.DataFrame:
-    """
-    Parse a HAPPENN hemolytic dataset file.
-    
-    Args:
-        file_path: Path to the hemolytic FASTA file
-        
-    Returns:
-        DataFrame with columns ['Sequence', 'y'] where y=0 for non-hemolytic, y=1 for hemolytic
-        
-    Raises:
-        FileNotFoundError: If file doesn't exist
-        ValueError: If file format is invalid
-    """
-    sequences = []
-    current_label = None
-    
-    with open(file_path, 'r') as infile:
-        for line in infile:
-            line = line.strip()
-            
-            if line.startswith(">"):
-                # Parse header line for hemolytic status
-                parts = line.split("|lcl|")
-                if len(parts) >= 4:
-                    label = parts[3].strip()
-                    current_label = 0 if 'non-hemolytic' in label else 1
-            elif line and current_label is not None:
-                # Sequence line
-                sequences.append([line, current_label])
-    
-    return pd.DataFrame(sequences, columns=['Sequence', 'y'])
-
-
 def parse_fasta_sequences(file_path: str) -> pd.DataFrame:
     """
     Parse a standard FASTA file into a DataFrame.

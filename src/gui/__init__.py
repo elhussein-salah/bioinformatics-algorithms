@@ -7,7 +7,6 @@ from .pattern_matcher import NaiveMatcherApp, BadCharacterMatcherApp
 from .indexing import IndexingApp
 from .suffix_array import SuffixArrayApp
 from .overlap import OverlapApp
-from .hemolytic import HemolyticApp
 from .approximate_matcher import ApproximateMatcherApp
 from .fasta_converter import FastaConverterApp
 
@@ -21,7 +20,6 @@ __all__ = [
     'IndexingApp',
     'SuffixArrayApp',
     'OverlapApp',
-    'HemolyticApp',
     'ApproximateMatcherApp',
     'FastaConverterApp'
 ]

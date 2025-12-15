@@ -292,7 +292,6 @@ from src.core import (
     
     # Sequence Analysis
     compute_overlap,
-    parse_hemolytic_file,
     parse_fasta_sequences
 )
 ```
@@ -310,7 +309,6 @@ from src.gui import (
     IndexingApp,
     SuffixArrayApp,
     OverlapApp,
-    HemolyticApp
 )
 ```
 
@@ -330,14 +328,6 @@ ATCGATCGATCGATCGA
 - Sequence can span multiple lines
 - No spaces in sequence data
 
-### HAPPENN Hemolytic Dataset
-
-```
->ID|lcl|data|hemolytic
-PEPTIDESEQUENCE
->ID|lcl|data|non-hemolytic
-PEPTIDESEQUENCE
-```
 
 ---
 
