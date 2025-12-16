@@ -149,65 +149,6 @@ def read_single_sequence(filepath: str) -> Tuple[str, str]:
     return first_seq.header, first_seq.sequence
 
 
-def fasta_to_csv(
-    fasta_filepath: str,
-    csv_filepath: Optional[str] = None,
-    include_description: bool = True,
-    include_length: bool = True
-) -> str:
-    """
-    Convert a FASTA file to CSV format.
-    
-    Args:
-        fasta_filepath: Path to the input FASTA file
-        csv_filepath: Path for output CSV file (auto-generated if None)
-        include_description: Include description column
-        include_length: Include sequence length column
-        
-    Returns:
-        Path to the created CSV file
-        
-    Raises:
-        FileNotFoundError: If FASTA file doesn't exist
-        FastaParseError: If FASTA format is invalid
-    """
-    # Parse FASTA file
-    fasta = read_fasta_file(fasta_filepath)
-    
-    # Generate output path if not provided
-    if csv_filepath is None:
-        base_name = os.path.splitext(fasta_filepath)[0]
-        csv_filepath = f"{base_name}.csv"
-    
-    # Build header row based on options
-    fieldnames = ['ID', 'Header']
-    if include_description:
-        fieldnames.append('Description')
-    fieldnames.append('Sequence')
-    if include_length:
-        fieldnames.append('Length')
-    
-    # Write CSV file
-    with open(csv_filepath, 'w', newline='', encoding='utf-8') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-        
-        for seq in fasta.sequences:
-            row = {
-                'ID': seq.id,
-                'Header': seq.header,
-                'Sequence': seq.sequence
-            }
-            if include_description:
-                row['Description'] = seq.description
-            if include_length:
-                row['Length'] = seq.length
-            
-            writer.writerow(row)
-    
-    return csv_filepath
-
-
 def validate_fasta_sequence(sequence: str, alphabet: str = "ACGT") -> Tuple[bool, List[str]]:
     """
     Validate a FASTA sequence against a given alphabet.

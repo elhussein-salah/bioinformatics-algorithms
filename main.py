@@ -156,18 +156,6 @@ class BioinformaticsApp(ModernApp):
                     }
                 ]
             },
-            {
-                'name': '📁 File Operations',
-                'tools': [
-                    {
-                        'id': 'fasta_converter',
-                        'name': 'FASTA Converter',
-                        'desc': 'Convert FASTA to CSV & read sequences',
-                        'icon': '📁',
-                        'color': MODERN_THEME['accent_primary']
-                    }
-                ]
-            }
         ]
         
         for category in categories:
@@ -277,7 +265,6 @@ class BioinformaticsApp(ModernApp):
             'indexing': self._build_indexing_page,
             'suffix_array': self._build_suffix_array_page,
             'overlap': self._build_overlap_page,
-            'fasta_converter': self._build_fasta_converter_page,
         }
         
         builder = tool_builders.get(tool_id)
@@ -1019,7 +1006,7 @@ class BioinformaticsApp(ModernApp):
     
     def _build_suffix_array_page(self, container: tk.Frame):
         """Build the suffix array page."""
-        from src.core.indexing import build_suffix_array
+        from src.core.indexing import build_inverse_suffix_array
         
         header = self.create_header(container, "📝 Suffix Array")
         
@@ -1045,23 +1032,23 @@ class BioinformaticsApp(ModernApp):
                 return
             
             try:
-                suffix_array = build_suffix_array(text)
+                inverse_suffix_array = build_inverse_suffix_array(text)
                 
                 result_text.configure(state='normal')
                 result_text.delete(1.0, tk.END)
                 result_text.insert(tk.END,
-                    f"═══ Suffix Array ═══\n\n"
+                    f"═══ Inverse Suffix Array ═══\n\n"
                     f"Text: {text}\n"
                     f"Length: {len(text)}\n\n"
-                    f"Suffix Array:\n"
+                    f"Inverse Suffix Array (position → rank):\n"
                 )
                 
-                for i, idx in enumerate(suffix_array[:50]):
-                    suffix = text[idx:]
-                    result_text.insert(tk.END, f"  {i}: [{idx}] {suffix}\n")
+                for pos, rank in enumerate(inverse_suffix_array[:50]):
+                    suffix = text[pos:]
+                    result_text.insert(tk.END, f"  Position {pos}: Rank {rank} → {suffix}\n")
                 
-                if len(suffix_array) > 50:
-                    result_text.insert(tk.END, f"\n  ... and {len(suffix_array) - 50} more\n")
+                if len(inverse_suffix_array) > 50:
+                    result_text.insert(tk.END, f"\n  ... and {len(inverse_suffix_array) - 50} more\n")
                 
                 result_text.configure(state='disabled')
             except Exception as e:
@@ -1146,232 +1133,7 @@ class BioinformaticsApp(ModernApp):
         
         find_btn = self.create_button(content, "Find Overlap", find_overlap, icon='🔗')
         find_btn.pack(pady=10)
-    
-   
-    def _build_fasta_converter_page(self, container: tk.Frame):
-        """Build the FASTA converter page with error handling."""
-        from src.core.fasta_operations import (
-            read_fasta_file, fasta_to_csv, get_fasta_statistics, FastaParseError
-        )
-        
-        header = self.create_header(container, "📁 FASTA Converter")
-        
-        content = tk.Frame(container, bg=MODERN_THEME['bg_primary'])
-        content.pack(fill='both', expand=True, padx=30, pady=20)
-        
-        # Two columns
-        left_col = tk.Frame(content, bg=MODERN_THEME['bg_primary'])
-        left_col.pack(side='left', fill='both', expand=True, padx=(0, 10))
-        
-        right_col = tk.Frame(content, bg=MODERN_THEME['bg_primary'])
-        right_col.pack(side='right', fill='both', expand=True, padx=(10, 0))
-        
-        # Load section
-        load_card = self.create_card(left_col, "Load FASTA File")
-        load_card.pack(fill='x', pady=10)
-        
-        status_label = self.create_label(load_card, "No file loaded", size='sm',
-                                         color=MODERN_THEME['text_muted'])
-        status_label.pack(anchor='w', pady=5)
-        
-        loaded_file = {'path': None, 'data': None}
-        
-        stats_text = None
-        seq_tree = None
-        detail_text = None
-        
-        def load_fasta():
-            file_path = self.choose_file("Select FASTA File")
-            
-            if not file_path:
-                return
-            
-            try:
-                fasta_data = read_fasta_file(file_path)
-                loaded_file['path'] = file_path
-                loaded_file['data'] = fasta_data
-                
-                status_label.configure(
-                    text=f"✅ Loaded: {os.path.basename(file_path)}",
-                    fg=MODERN_THEME['success']
-                )
-                
-                # Update statistics
-                try:
-                    stats = get_fasta_statistics(file_path)
-                    stats_text.configure(state='normal')
-                    stats_text.delete(1.0, tk.END)
-                    stats_text.insert(tk.END,
-                        f"Sequences: {stats['num_sequences']}\n"
-                        f"Total length: {stats['total_length']:,} bp\n"
-                        f"Average: {stats['avg_length']:,.1f} bp\n"
-                        f"Min: {stats['min_length']:,} bp\n"
-                        f"Max: {stats['max_length']:,} bp"
-                    )
-                    stats_text.configure(state='disabled')
-                except Exception as e:
-                    stats_text.configure(state='normal')
-                    stats_text.delete(1.0, tk.END)
-                    stats_text.insert(tk.END, f"Stats error: {e}")
-                    stats_text.configure(state='disabled')
-                
-                # Populate tree
-                for item in seq_tree.get_children():
-                    seq_tree.delete(item)
-                
-                for seq in fasta_data.sequences:
-                    seq_tree.insert('', 'end', values=(
-                        seq.id,
-                        seq.length,
-                        seq.description[:30] + "..." if len(seq.description) > 30 else seq.description
-                    ))
-                    
-            except FastaParseError as e:
-                self.show_message("Parse Error", f"Invalid FASTA format:\n{e}", 'error')
-                status_label.configure(text=f"❌ Parse error", fg=MODERN_THEME['error'])
-            except FileNotFoundError:
-                self.show_message("Error", "File not found", 'error')
-                status_label.configure(text=f"❌ File not found", fg=MODERN_THEME['error'])
-            except Exception as e:
-                self.show_message("Error", f"Failed to load file:\n{e}", 'error')
-                status_label.configure(text=f"❌ Load error", fg=MODERN_THEME['error'])
-        
-        load_btn = self.create_button(load_card, "Load FASTA File", load_fasta, icon='📂')
-        load_btn.pack(anchor='w', pady=10)
-        
-        # Statistics section
-        stats_card = self.create_card(left_col, "Statistics")
-        stats_card.pack(fill='x', pady=10)
-        
-        stats_text = self.create_text_area(stats_card, height=5, readonly=True)
-        stats_text.pack(fill='x')
-        
-        # Convert section
-        convert_card = self.create_card(left_col, "Convert to CSV")
-        convert_card.pack(fill='x', pady=10)
-        
-        # Options
-        include_desc_var = tk.BooleanVar(value=True)
-        include_len_var = tk.BooleanVar(value=True)
-        
-        desc_check = tk.Checkbutton(
-            convert_card, text="Include Description",
-            variable=include_desc_var,
-            bg=MODERN_THEME['bg_card'], fg=MODERN_THEME['text_primary'],
-            selectcolor=MODERN_THEME['bg_secondary'],
-            font=(MODERN_THEME['font_family'], 10)
-        )
-        desc_check.pack(anchor='w')
-        
-        len_check = tk.Checkbutton(
-            convert_card, text="Include Length",
-            variable=include_len_var,
-            bg=MODERN_THEME['bg_card'], fg=MODERN_THEME['text_primary'],
-            selectcolor=MODERN_THEME['bg_secondary'],
-            font=(MODERN_THEME['font_family'], 10)
-        )
-        len_check.pack(anchor='w')
-        
-        convert_status = self.create_label(convert_card, "", size='sm')
-        convert_status.pack(anchor='w', pady=5)
-        
-        def convert():
-            if not loaded_file['path']:
-                self.show_message("Error", "Please load a FASTA file first", 'warning')
-                return
-            
-            # Ask for save location
-            save_path = self.save_file(
-                "Save CSV As",
-                [("CSV files", "*.csv")],
-                ".csv"
-            )
-            
-            if not save_path:
-                return
-            
-            try:
-                result = fasta_to_csv(
-                    loaded_file['path'],
-                    save_path,
-                    include_description=include_desc_var.get(),
-                    include_length=include_len_var.get()
-                )
-                
-                convert_status.configure(
-                    text=f"✅ Saved: {os.path.basename(result)}",
-                    fg=MODERN_THEME['success']
-                )
-                self.show_message("Success", f"CSV saved to:\n{result}", 'info')
-                
-            except FastaParseError as e:
-                convert_status.configure(text="❌ Parse error", fg=MODERN_THEME['error'])
-                self.show_message("Error", f"FASTA parse error:\n{e}", 'error')
-            except PermissionError:
-                convert_status.configure(text="❌ Permission denied", fg=MODERN_THEME['error'])
-                self.show_message("Error", "Permission denied. File may be open in another program.", 'error')
-            except Exception as e:
-                convert_status.configure(text="❌ Conversion failed", fg=MODERN_THEME['error'])
-                self.show_message("Error", f"Conversion failed:\n{e}", 'error')
-        
-        convert_btn = self.create_button(convert_card, "Convert to CSV", convert, 
-                                         style='success', icon='💾')
-        convert_btn.pack(anchor='w', pady=10)
-        
-        # Right column - Sequence browser
-        browse_card = self.create_card(right_col, "Sequences")
-        browse_card.pack(fill='both', expand=True, pady=10)
-        
-        # Treeview
-        columns = ('ID', 'Length', 'Description')
-        seq_tree = ttk.Treeview(
-            browse_card, columns=columns, show='headings',
-            height=8, style='Modern.Treeview'
-        )
-        
-        seq_tree.heading('ID', text='ID')
-        seq_tree.heading('Length', text='Length')
-        seq_tree.heading('Description', text='Description')
-        
-        seq_tree.column('ID', width=100)
-        seq_tree.column('Length', width=60)
-        seq_tree.column('Description', width=150)
-        
-        seq_tree.pack(fill='both', expand=True, pady=5)
-        
-        # Sequence detail
-        detail_card = self.create_card(right_col, "Sequence Detail")
-        detail_card.pack(fill='both', expand=True, pady=10)
-        
-        detail_text = self.create_text_area(detail_card, height=8, readonly=True)
-        detail_text.pack(fill='both', expand=True)
-        
-        def on_select(event):
-            selection = seq_tree.selection()
-            if not selection or not loaded_file['data']:
-                return
-            
-            values = seq_tree.item(selection[0], 'values')
-            seq_id = values[0]
-            
-            for seq in loaded_file['data'].sequences:
-                if seq.id == seq_id:
-                    detail_text.configure(state='normal')
-                    detail_text.delete(1.0, tk.END)
-                    detail_text.insert(tk.END,
-                        f"ID: {seq.id}\n"
-                        f"Header: {seq.header}\n"
-                        f"Length: {seq.length} bp\n\n"
-                        f"Sequence:\n"
-                    )
-                    # Format sequence
-                    for i in range(0, len(seq.sequence), 60):
-                        detail_text.insert(tk.END, seq.sequence[i:i+60] + '\n')
-                    detail_text.configure(state='disabled')
-                    break
-        
-        seq_tree.bind('<<TreeviewSelect>>', on_select)
-    
+
     # ==================== Helper Methods ====================
     
     def _load_fasta_to_entry(self, entry: tk.Entry, status_label=None):

@@ -8,7 +8,6 @@ from .indexing import IndexingApp
 from .suffix_array import SuffixArrayApp
 from .overlap import OverlapApp
 from .approximate_matcher import ApproximateMatcherApp
-from .fasta_converter import FastaConverterApp
 
 __all__ = [
     'BaseApp',
@@ -21,5 +20,4 @@ __all__ = [
     'SuffixArrayApp',
     'OverlapApp',
     'ApproximateMatcherApp',
-    'FastaConverterApp'
 ]

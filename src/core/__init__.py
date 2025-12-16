@@ -52,7 +52,6 @@ from .approximate_matching import (
 from .fasta_operations import (
     read_fasta_file,
     read_single_sequence,
-    fasta_to_csv,
     get_fasta_statistics,
     validate_fasta_sequence,
     FastaSequence,
@@ -103,7 +102,6 @@ __all__ = [
     # FASTA operations
     'read_fasta_file',
     'read_single_sequence',
-    'fasta_to_csv',
     'get_fasta_statistics',
     'validate_fasta_sequence',
     'FastaSequence',
